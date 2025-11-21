@@ -1,12 +1,33 @@
 import streamlit as st
 import os
+from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 
 # =============================
 # CONFIGURAÇÃO DO GROQ
 # =============================
-api_key = st.secrets["GROQ_API_KEY"] if "GROQ_API_KEY" in st.secrets else "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"
+
+# Carrega .env local (se existir)
+load_dotenv()
+
+# 1. Tenta pegar do Streamlit Cloud (st.secrets)
+if "GROQ_API_KEY" in st.secrets:
+    api_key = st.secrets["GROQ_API_KEY"]
+
+# 2. Se não achar, tenta pegar local via variável de ambiente
+elif os.getenv("GROQ_API_KEY"):
+    api_key = os.getenv("GROQ_API_KEY")
+
+# 3. Se ainda não encontrou → erro amigável
+else:
+    st.error(
+        "❌ ERRO: A chave GROQ_API_KEY não foi encontrada.\n"
+        "→ No Streamlit Cloud: coloque sua chave em 'Secrets'.\n"
+        "→ Localmente: defina uma variável de ambiente ou um arquivo .env.\n"
+    )
+    st.stop()
+
 os.environ["GROQ_API_KEY"] = api_key
 
 chat = ChatGroq(model='llama-3.3-70b-versatile')
@@ -196,3 +217,4 @@ if modo == "Estudo Catequético":
         if st.session_state.aula > len(modulo["aulas"]):
             st.success("🎉 Você concluiu o módulo 1!")
             st.session_state.aula = len(modulo["aulas"])
+
