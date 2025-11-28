@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import requests
 
 # =============================
 # IMPORT OPCIONAL DO DOTENV
@@ -84,15 +85,116 @@ Use esse conteúdo para responder quando relevante.
 Caso o documento não tenha relação com a pergunta, responda normalmente como catequista.
 """
 
+def prompt_meditacoes_sao_josemaria(documento=""):
+    return f"""
+Você é um diretor espiritual inspirado nos ensinamentos de São Josemaria Escrivá,
+fundador do Opus Dei, e escreve **meditações diárias profundas, práticas e calorosas**,
+voltadas para pessoas comuns que desejam santificar a vida diária.
+
+⚜️ ESTILO E INTENÇÃO
+• Tom espiritual afetuoso, motivador e exigente, como em “Caminho”, “Forja” e “Sulco”.
+• Ênfase na santificação do trabalho e da vida ordinária.
+• Linguagem direta, curta, concreta e ardente.
+• Evite abstrações longas: fale ao coração e à vontade.
+• Use frases curtas e fortes, às vezes aforísticas.
+• Inclua conselhos práticos para viver a união com Deus “no meio do mundo”.
+
+⚜️ CONTEÚDO DA MEDITAÇÃO
+1. Luz inicial do Evangelho do dia (ou do texto enviado).
+2. Aplicação prática à vida ordinária.
+3. Propósito concreto e possível.
+4. Palavras breves de ânimo e correção fraterna.
+5. Se adequado, referências a São Josemaria (Caminho, Sulco, Forja), sem citações longas.
+
+⚜️ TONALIDADE
+• Firme, mas carinhosa.
+• Otimista.
+• Cristo no centro.
+• Vida interior + trabalho + serviço.
+
+=== Texto base fornecido ===
+{documento}
+
+Escreva uma meditação completa com base nisso.
+"""
+
+def prompt_homilias_bento_xvi(documento=""):
+    return f"""
+Você é um teólogo-pregador com o estilo e a espiritualidade de Bento XVI:
+profundo, cristalino, centrado em Cristo, teologicamente preciso e liturgicamente sensível.
+
+⚜️ ESTILO E REFERÊNCIA
+• Clareza intelectual + profundidade espiritual.
+• Linguagem elegante, simples, mas elevada.
+• Cristologia no centro: Cristo como chave da interpretação.
+• Hermenêutica da continuidade — fidelidade ao Magistério.
+• Unidade entre razão e fé.
+• Recorrência a temas típicos de Bento XVI:
+  – Verdade
+  – Beleza litúrgica
+  – Amizade com Cristo
+  – A fé como encontro pessoal
+  – Conversão do coração
+  – Sentido teológico da liturgia
+
+⚜️ ESTRUTURA DA HOMILIA
+1. Introdução iluminando o Evangelho do dia.
+2. Explicação teológica clara e profunda.
+3. Aplicação espiritual e existencial.
+4. Chamado à conversão e à esperança.
+5. Conclusão com olhar mariano.
+
+⚜️ TOM
+• Contemplativo.
+• Cristocêntrico.
+• Esperançoso.
+• Sólido na doutrina.
+
+=== Evangelho do dia ou texto base ===
+{documento}
+
+Escreva uma homilia completa nesse estilo.
+"""
+
+
 # =============================
 # FUNÇÃO DO CHAT
 # =============================
+def obter_evangelho_do_dia():
+    try:
+        url = "https://liturgia.up.railway.app/evangelho"
+        r = requests.get(url, timeout=10)
+        data = r.json()
+
+        evangelho = f"{data['referencia']}\n\n{data['texto']}"
+        return evangelho
+
+    except Exception as e:
+        return f"Não foi possível obter o Evangelho automaticamente. Erro: {e}"
+
 def resposta_bot(mensagens, documento=""):
-    mensagens_modelo = [('system', prompt_system(documento))]
+
+    # Escolher o prompt conforme o agente selecionado
+    agente = st.session_state.agente
+
+    if agente == "Catequista":
+        system_prompt = prompt_system(documento)
+
+    elif agente == "Homilias – Bento XVI":
+        system_prompt = prompt_homilias_bento_xvi(documento)
+
+    elif agente == "Meditações – São Josemaria":
+        system_prompt = prompt_meditacoes_sao_josemaria(documento)
+
+    # Montar mensagens para o modelo
+    mensagens_modelo = [('system', system_prompt)]
     mensagens_modelo += mensagens
+
+    # Gerar resposta
     template = ChatPromptTemplate.from_messages(mensagens_modelo)
     chain = template | chat
     return chain.invoke({}).content
+
 
 # ======================================================================
 # CONTEÚDO DO CURSO COM TESTES
@@ -260,10 +362,30 @@ st.title("✝️ Catequista Virtual – Catequese de Adultos")
 st.write("Escolha o modo abaixo:")
 
 modo = st.radio("Selecione o modo:", ["Conversa com a Catequista", "Estudo Catequético"])
+if "agente" not in st.session_state:
+    st.session_state.agente = "Catequista"
+
+st.subheader("Escolha o agente:")
+agente = st.radio(
+    "Selecione o perfil do agente:",
+    [
+        "Catequista",
+        "Homilias – Bento XVI",
+        "Meditações – São Josemaria"
+    ]
+)
+
+st.session_state.agente = agente
+
 
 # ------------------  MODO CONVERSA ------------------
 if modo == "Conversa com a Catequista":
     st.subheader("💬 Conversa com a Catequista")
+    if st.session_state.agente in ["Homilias – Bento XVI", "Meditações – São Josemaria"]:
+    if st.button("📖 Usar Evangelho do Dia"):
+        evangelho = obter_evangelho_do_dia()
+        st.session_state.pergunta = evangelho
+
 
     if "mensagens" not in st.session_state:
         st.session_state.mensagens = []
