@@ -35,7 +35,7 @@ os.environ["GROQ_API_KEY"] = api_key
 chat = ChatGroq(model='llama-3.3-70b-versatile')
 
 # =============================
-# PROMPT SYSTEM (mantido igual ao seu)
+# PROMPT SYSTEM
 # =============================
 def prompt_system(documento=""):
     return f"""
@@ -84,18 +84,15 @@ Use esse conteúdo para responder quando relevante.
 Caso o documento não tenha relação com a pergunta, responda normalmente como catequista.
 """
 
-
 # =============================
 # FUNÇÃO DO CHAT
 # =============================
 def resposta_bot(mensagens, documento=""):
     mensagens_modelo = [('system', prompt_system(documento))]
     mensagens_modelo += mensagens
-
     template = ChatPromptTemplate.from_messages(mensagens_modelo)
     chain = template | chat
     return chain.invoke({}).content
-
 
 # ======================================================================
 # CONTEÚDO DO CURSO COM TESTES
@@ -155,6 +152,21 @@ A fé é como uma chama: precisa ser alimentada.
 # ======================================================================
 st.set_page_config(page_title="Catequista Virtual", layout="centered")
 
+# ===================== CSS =====================
+st.markdown("""
+<style>
+body { background-color: #f6f3ef; }
+
+.msg { padding: 10px 15px; margin: 8px 0; max-width: 85%; border-radius: 10px; font-size: 16px; line-height: 1.4; }
+.msg.user { margin-left: auto; background-color: #d9e8ff; border: 1px solid #aac8ff; text-align: right; }
+.msg.bot { margin-right: auto; background-color: #fffaf2; border: 1px solid #f0d9b5; text-align: left; }
+
+button[kind=secondary] { background-color: #4a7bd6 !important; color: white !important; border-radius: 6px !important; }
+input[type=text] { border-radius: 6px !important; border: 1px solid #bbb !important; }
+
+</style>
+""", unsafe_allow_html=True)
+
 st.title("✝️ Catequista Virtual – Catequese de Adultos")
 st.write("Escolha o modo abaixo:")
 
@@ -167,21 +179,34 @@ if modo == "Conversa com a Catequista":
     if "mensagens" not in st.session_state:
         st.session_state.mensagens = []
 
-    pergunta = st.text_input("Digite sua pergunta:")
-
-    if st.button("Enviar"):
-        if pergunta.strip():
-            st.session_state.mensagens.append(("user", pergunta))
+    # Função enviar mensagem
+    def enviar_msg():
+        texto = st.session_state.pergunta.strip()
+        if not texto:
+            return
+        st.session_state.mensagens.append(("user", texto))
+        st.session_state.pergunta = ""
+        with st.spinner("✍️ Formulando resposta..."):
             resposta = resposta_bot(st.session_state.mensagens)
-            st.session_state.mensagens.append(("assistant", resposta))
+        st.session_state.mensagens.append(("assistant", resposta))
+        st.rerun()
 
-    # Mostrar histórico
-    for remetente, texto in st.session_state.mensagens:
-        if remetente == "user":
-            st.markdown(f"**Você:** {texto}")
+    # Histórico
+    for sender, text in st.session_state.mensagens:
+        if sender == "user":
+            st.markdown(f"<div class='msg user'>{text}</div>", unsafe_allow_html=True)
         else:
-            st.markdown(f"**Catequista:** {texto}")
+            st.markdown(f"<div class='msg bot'>{text}</div>", unsafe_allow_html=True)
 
+    st.markdown("---")
+
+    # Caixa de texto + botão
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        #st.text_input("Digite sua pergunta:", key="pergunta")
+        st.text_area("Digite sua pergunta:", key="pergunta", height=80)
+    with col2:
+        st.button("Enviar", on_click=enviar_msg)
 
 # ------------------  MODO ESTUDO ------------------
 if modo == "Estudo Catequético":
@@ -203,13 +228,12 @@ if modo == "Estudo Catequético":
 
     st.write(teste["pergunta"])
 
-    resposta = st.radio(
-        "Escolha a resposta:",
-        list(teste["alternativas"].keys())
-    )
+    opcoes_formatadas = [f"{letra}) {texto}" for letra, texto in teste["alternativas"].items()]
+    resposta_usuario = st.radio("Escolha a resposta:", opcoes_formatadas)
 
     if st.button("Verificar resposta"):
-        if resposta == teste["correta"]:
+        letra_escolhida = resposta_usuario[0]
+        if letra_escolhida == teste["correta"]:
             st.success("Resposta correta! Muito bem!")
         else:
             st.error(f"Resposta incorreta. A alternativa correta é: {teste['correta']}")
@@ -219,5 +243,3 @@ if modo == "Estudo Catequético":
         if st.session_state.aula > len(modulo["aulas"]):
             st.success("🎉 Você concluiu o módulo 1!")
             st.session_state.aula = len(modulo["aulas"])
-
-
