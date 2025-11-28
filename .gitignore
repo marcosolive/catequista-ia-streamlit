@@ -1,0 +1,5 @@
+# Não subir configurações do Streamlit
+.streamlit/
+
+# Não subir variáveis de ambiente
+.env

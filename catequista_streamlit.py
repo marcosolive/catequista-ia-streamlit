@@ -155,15 +155,104 @@ st.set_page_config(page_title="Catequista Virtual", layout="centered")
 # ===================== CSS =====================
 st.markdown("""
 <style>
-body { background-color: #f6f3ef; }
+/* ============================
+   TEMA PADRÃO (LIGHT MODE)
+   ============================ */
+body {
+    background-color: #f6f3ef !important;
+    color: #2b2b2b !important;
+}
 
-.msg { padding: 10px 15px; margin: 8px 0; max-width: 85%; border-radius: 10px; font-size: 16px; line-height: 1.4; }
-.msg.user { margin-left: auto; background-color: #d9e8ff; border: 1px solid #aac8ff; text-align: right; }
-.msg.bot { margin-right: auto; background-color: #fffaf2; border: 1px solid #f0d9b5; text-align: left; }
+.msg {
+    padding: 10px 15px;
+    margin: 8px 0;
+    max-width: 85%;
+    border-radius: 10px;
+    font-size: 16px;
+    line-height: 1.5;
+}
 
-button[kind=secondary] { background-color: #4a7bd6 !important; color: white !important; border-radius: 6px !important; }
-input[type=text] { border-radius: 6px !important; border: 1px solid #bbb !important; }
+/* Mensagem do usuário */
+.msg.user {
+    margin-left: auto;
+    background-color: #d9e8ff !important;
+    border: 1px solid #aac8ff !important;
+    text-align: right;
+    color: #000 !important;
+}
 
+/* Mensagem do bot */
+.msg.bot {
+    margin-right: auto;
+    background-color: #fffaf2 !important;
+    border: 1px solid #f0d9b5 !important;
+    text-align: left;
+    color: #000 !important;
+}
+
+/* Botões */
+button[kind=secondary] {
+    background-color: #4a7bd6 !important;
+    color: white !important;
+    border-radius: 6px !important;
+}
+
+/* Inputs (light) */
+input[type=text],
+textarea {
+    border-radius: 6px !important;
+    border: 1px solid #bbb !important;
+    background-color: #ffffff !important;
+    color: #000 !important;
+}
+
+/* =======================================
+   DARK MODE — aplicado automaticamente
+   ======================================= */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #121212 !important;
+        color: #e8e8e8 !important;
+    }
+
+    /* Mensagens */
+    .msg.user {
+        background-color: #1e3a5f !important;
+        border: 1px solid #355983 !important;
+        color: #e3eeff !important;
+    }
+
+    .msg.bot {
+        background-color: #2a2420 !important;
+        border: 1px solid #4f3e2d !important;
+        color: #f2e6d8 !important;
+    }
+
+    /* Inputs */
+    input[type=text],
+    textarea {
+        background-color: #1e1e1e !important;
+        border: 1px solid #555 !important;
+        color: #f0f0f0 !important;
+    }
+
+    /* Botões */
+    button[kind=secondary] {
+        background-color: #3f6ac9 !important;
+        color: #fff !important;
+        border-radius: 6px !important;
+    }
+
+    /* Radio buttons e textos gerais */
+    .stRadio label {
+        color: #e8e8e8 !important;
+    }
+
+    .stMarkdown,
+    p, h1, h2, h3, h4, h5 {
+        color: #e8e8e8 !important;
+    }
+}
 </style>
 """, unsafe_allow_html=True)
 
