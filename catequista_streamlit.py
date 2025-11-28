@@ -189,7 +189,7 @@ if modo == "Conversa com a Catequista":
         with st.spinner("✍️ Formulando resposta..."):
             resposta = resposta_bot(st.session_state.mensagens)
         st.session_state.mensagens.append(("assistant", resposta))
-        st.rerun()
+        #st.rerun()
 
     # Histórico
     for sender, text in st.session_state.mensagens:
@@ -243,3 +243,4 @@ if modo == "Estudo Catequético":
         if st.session_state.aula > len(modulo["aulas"]):
             st.success("🎉 Você concluiu o módulo 1!")
             st.session_state.aula = len(modulo["aulas"])
+
