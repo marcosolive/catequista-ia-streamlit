@@ -382,9 +382,9 @@ st.session_state.agente = agente
 if modo == "Conversa com a Catequista":
     st.subheader("💬 Conversa com a Catequista")
     if st.session_state.agente in ["Homilias – Bento XVI", "Meditações – São Josemaria"]:
-    if st.button("📖 Usar Evangelho do Dia"):
-        evangelho = obter_evangelho_do_dia()
-        st.session_state.pergunta = evangelho
+        if st.button("📖 Usar Evangelho do Dia"):
+            evangelho = obter_evangelho_do_dia()
+            st.session_state.pergunta = evangelho
 
 
     if "mensagens" not in st.session_state:
