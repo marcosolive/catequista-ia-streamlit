@@ -162,15 +162,23 @@ Escreva uma homilia completa nesse estilo.
 # =============================
 def obter_evangelho_do_dia():
     try:
-        url = "https://liturgia.up.railway.app/evangelho"
+        url = "https://liturgia.up.railway.app/"
         r = requests.get(url, timeout=10)
         data = r.json()
 
-        evangelho = f"{data['referencia']}\n\n{data['texto']}"
+        # A API agora retorna o evangelho dentro de data["evangelho"]
+        evangelho_data = data.get("evangelho", {})
+
+        referencia = evangelho_data.get("referencia", "Referência não encontrada")
+        texto = evangelho_data.get("texto", "Texto não encontrado")
+        titulo = evangelho_data.get("titulo", "")
+
+        evangelho = f"{referencia}\n{titulo}\n\n{texto}"
         return evangelho
 
     except Exception as e:
         return f"Não foi possível obter o Evangelho automaticamente. Erro: {e}"
+
 
 def resposta_bot(mensagens, documento=""):
 
